@@ -1,0 +1,166 @@
+library(ROCR)
+library("caret")
+
+opt.cut = function(perf, pred){
+  cut.ind = mapply(FUN=function(x, y, p){
+    d = (x - 0)^2 + (y-1)^2
+    ind = which(d == min(d))
+    c(sensitivity = y[[ind]], specificity = 1-x[[ind]], 
+      cutoff = p[[ind]])
+  }, perf@x.values, perf@y.values, pred@cutoffs)
+}
+#over 65.29
+predictions <- predict(model_over, over_test, type="response")
+head(cbind(predictions[[2]], over_test$SeriousDlqin2yrs), 5)
+pred <- prediction(predictions,over_test$SeriousDlqin2yrs)
+roc.perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+print(opt.cut(roc.perf, pred))
+cost.perf = performance(pred, "cost", cost.fp = 1, cost.fn = 2)
+x<-pred@cutoffs[[1]][which.min(cost.perf@y.values[[1]])]
+auc.perf = performance(pred, measure = "auc")
+auc.perf@y.values
+y<-vector()
+for(g in 1:70037)
+  { 
+  if (predictions[[g]]>x[[1]]) 
+    predictions[[g]]=1
+  else predictions[[g]]=0
+  
+  y[g]<-predictions[[g]]
+}
+y<-as.factor(y)
+w<-confusionMatrix(data=y,reference=over_test$SeriousDlqin2yrs)
+
+#under 64.59
+predictions <- predict(model_under, under_test, type="response")
+head(cbind(predictions, under_test$SeriousDlqin2yrs), 5)
+pred <- prediction(predictions,under_test$SeriousDlqin2yrs)
+roc.perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+print(opt.cut(roc.perf, pred))
+cost.perf = performance(pred, "cost", cost.fp = 1, cost.fn = 2)
+x<-pred@cutoffs[[1]][which.min(cost.perf@y.values[[1]])]
+auc.perf = performance(pred, measure = "auc")
+auc.perf@y.values
+y<-vector()
+for(g in 1:37500)
+{ 
+  if (predictions[[g]]>x[[1]]) 
+    predictions[[g]]=1
+  else predictions[[g]]=0
+  
+  y[g]<-predictions[[g]]
+}
+y<-as.factor(y)
+confusionMatrix(data=y,reference=under_test$SeriousDlqin2yrs)
+
+
+#both 65.46
+predictions <- predict(model_both, both_test, type="response")
+head(cbind(predictions, both_test$SeriousDlqin2yrs), 5)
+pred <- prediction(predictions,both_test$SeriousDlqin2yrs)
+roc.perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+print(opt.cut(roc.perf, pred))
+cost.perf = performance(pred, "cost", cost.fp = 1, cost.fn = 2)
+x<-pred@cutoffs[[1]][which.min(cost.perf@y.values[[1]])]
+auc.perf = performance(pred, measure = "auc")
+auc.perf@y.values
+y<-vector()
+for(g in 1:37500)
+{ 
+  if (predictions[[g]]>x[[1]]) 
+    predictions[[g]]=1
+  else predictions[[g]]=0
+  
+  y[g]<-predictions[[g]]
+}
+y<-as.factor(y)
+confusionMatrix(data=y,reference=both_test$SeriousDlqin2yrs)
+
+#adas  64.44
+predictions <- predict(model_adas, adas_test, type="response")
+head(cbind(predictions, adas_test$class), 5)
+pred <- prediction(predictions,adas_test$class)
+roc.perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+print(opt.cut(roc.perf, pred))
+cost.perf = performance(pred, "cost", cost.fp = 1, cost.fn = 2)
+x<-pred@cutoffs[[1]][which.min(cost.perf@y.values[[1]])]
+auc.perf = performance(pred, measure = "auc")
+auc.perf@y.values
+y<-vector()
+for(g in 1:69457)
+{ 
+  if (predictions[[g]]>x[[1]]) 
+    predictions[[g]]=1
+  else predictions[[g]]=0
+  
+  y[g]<-predictions[[g]]
+}
+y<-as.factor(y)
+confusionMatrix(data=y,reference=adas_test$class)
+
+#bl 72.83353
+predictions <- predict(model_bl, bl_test, type="response")
+head(cbind(predictions, bl_test$class), 5)
+pred <- prediction(predictions,bl_test$class)
+roc.perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+print(opt.cut(roc.perf, pred))
+cost.perf = performance(pred, "cost", cost.fp = 1, cost.fn = 2)
+x<-pred@cutoffs[[1]][which.min(cost.perf@y.values[[1]])]
+auc.perf = performance(pred, measure = "auc")
+auc.perf@y.values
+y<-vector()
+for(g in 1:69320)
+{ 
+  if (predictions[[g]]>x[[1]]) 
+    predictions[[g]]=1
+  else predictions[[g]]=0
+  
+  y[g]<-predictions[[g]]
+}
+y<-as.factor(y)
+confusionMatrix(data=y,reference=bl_test$class)
+
+#clustered
+predictions <- predict(model_cl, cl_test, type="response")
+head(cbind(predictions, cl_test$SeriousDlqin2yrs), 5)
+pred <- prediction(predictions,cl_test$SeriousDlqin2yrs)
+roc.perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+print(opt.cut(roc.perf, pred))
+cost.perf = performance(pred, "cost", cost.fp = 1, cost.fn = 2)
+x<-pred@cutoffs[[1]][which.min(cost.perf@y.values[[1]])]
+auc.perf = performance(pred, measure = "auc")
+auc.perf@y.values
+y<-vector()
+
+for(g in 1:5007) 
+{ 
+  y[g]<-predictions[[g]]
+}
+
+for(g in 1:5007) 
+{ 
+  if(is.na(y[g])) y[g]<-0
+}
+for(g in 1:5007) 
+{ 
+  if (y[g]>x[[1]]) 
+    y[g]=1
+  else y[g]=0
+  
+  
+}
+
+y<-as.factor(y)
+confusionMatrix(data=y,reference=cl_test$SeriousDlqin2yrs)
