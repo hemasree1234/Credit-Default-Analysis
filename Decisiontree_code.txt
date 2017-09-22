@@ -1,0 +1,121 @@
+DECISION TREES
+
+library(tree)
+library(ROSE)
+library(pROC)
+library(caret)
+mi=subset(VIF_adjusted,select=-X1)
+mi=data.frame(mi)
+table(is.na(mi))
+
+#undersampling
+under <- ovun.sample(SeriousDlqin2yrs ~ ., data = mi, method = "under",N = 20052)$data
+intrainunder=createDataPartition(1:nrow(under),p=0.7,list=FALSE)
+trainunder=under[intrainunder,]
+testunder=under[-intrainunder,2:8]
+testlables=under[-intrainunder,1]
+
+#building tree
+tree=tree(as.factor(SeriousDlqin2yrs)~.,data=trainunder)
+summary(tree)
+plot(tree)
+tree
+text(tree,pretty = 0)
+tree.pred=predict(tree,testunder,type="class")
+
+#ROC & Confusion matrix
+tree.pred=as.numeric(tree.pred)
+tree.predfinal=ifelse(tree.pred==1,0,1)
+roc.tree=roc(testlables,tree.predfinal)
+auc(roc.tree)
+plot(roc.tree)
+testlables=as.character(testlables)
+tree.predfinal=as.character(tree.predfinal)
+confusionMatrix(tree.predfinal,testlables)
+
+-------------------------------------------------------------------------------------------------
+#oversampling
+over <- ovun.sample(SeriousDlqin2yrs ~ ., data = mi, method = "over",N = 280000)$data
+intrainover=createDataPartition(1:nrow(over),p=0.7,list=FALSE)
+trainover=over[intrainover,]
+testover=over[-intrainover,2:8]
+testlables=over[-intrainover,1]
+
+#building tree
+tree=tree(as.factor(SeriousDlqin2yrs)~.,data=trainover)
+summary(tree)
+plot(tree)
+tree
+text(tree,pretty = 0)
+tree.pred=predict(tree,testover,type="class")
+
+#ROC & Confusion matrix
+tree.pred=as.numeric(tree.pred)
+tree.predfinal=ifelse(tree.pred==1,0,1)
+roc.tree=roc(testlables,tree.predfinal)
+auc(roc.tree)
+plot(roc.tree)
+testlables=as.character(testlables)
+tree.predfinal=as.character(tree.predfinal)
+confusionMatrix(tree.predfinal,testlables)
+
+---------------------------------------------------------------------------------------------------------------------
+#bothsampling
+both <- ovun.sample(SeriousDlqin2yrs ~ ., data = mi, method = "both",N = 180000)$data
+intrainboth=createDataPartition(1:nrow(both),p=0.7,list=FALSE)
+trainboth=both[intrainboth,]
+testboth=both[-intrainboth,2:8]
+testlables=both[-intrainboth,1]
+#building tree
+tree=tree(as.factor(SeriousDlqin2yrs)~.,data=trainboth)
+summary(tree)
+plot(tree)
+tree
+text(tree,pretty = 0)
+tree.pred=predict(tree,testboth,type="class")
+
+#ROC & Confusion matrix
+tree.pred=as.numeric(tree.pred)
+tree.predfinal=ifelse(tree.pred==1,0,1)
+roc.tree=roc(testlables,tree.predfinal)
+auc(roc.tree)
+plot(roc.tree)
+testlables=as.character(testlables)
+tree.predfinal=as.character(tree.predfinal)
+confusionMatrix(tree.predfinal,testlables)
+
+------------------------------------------------------------------------------------------------------
+RANDOM FORESTS
+
+library(tree)
+library(ROSE)
+library(pROC)
+library(randomForest)
+library(caret)
+mi=subset(VIF_adjusted,select=-X1)
+mi=data.frame(mi)
+table(is.na(mi))
+
+#undersampling
+under <- ovun.sample(SeriousDlqin2yrs ~ ., data = mi, method = "under",N = 20052)$data
+intrainunder=createDataPartition(1:nrow(under),p=0.7,list=FALSE)
+trainunder=under[intrainunder,]
+testunder=under[-intrainunder,2:8]
+testlables=under[-intrainunder,1]
+
+#building randomforest
+rf=randomForest(as.factor(SeriousDlqin2yrs)~.,data=trainunder,mtry=3,importance=TRUE)
+summary(rf)
+rf
+rf.pred=predict(rf,testunder,type="class")
+
+#ROC & Confusion matrix
+rf.pred=as.numeric(rf.pred)
+rf.pred.final=ifelse(rf.pred==1,0,1)
+roc.rf=roc(testlables,rf.pred)
+auc(roc.rf)
+plot(roc.rf)
+testlables=as.character(testlables)
+rf.pred.final=as.character(rf.pred.final)
+confusionMatrix(rf.pred.final,testlables)
+

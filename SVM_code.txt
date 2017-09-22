@@ -1,0 +1,149 @@
+SVM_One class learning
+
+library(e1071)
+library(caret)
+library(NLP)
+library(tm)
+library(pROC)
+mi=data.frame(VIF_adjusted)
+mi=subset(mi,select=-X1)
+lapply(mi,class)
+
+#Data splitting
+positive=subset(mi,mi$SeriousDlqin2yrs==1)
+negative=subset(mi,mi$SeriousDlqin2yrs==0)
+intrain=createDataPartition(1:nrow(positive),p=0.6,list=FALSE)
+train=positive[intrain,2:8]
+trainlabels=positive[intrain,1]
+
+testpositive=positive[-intrain,]
+testwithclass=rbind(negative,testpositive)
+test=testwithclass[,2:8]
+testlables=testwithclass[,1]
+
+#Building SVM Model
+svm.model<-svm(train,y=NULL,
+               type='one-classification',
+               nu=0.10,
+               scale=TRUE)
+svm.predtrain<-predict(svm.model,train)
+svm.predtest<-predict(svm.model,test)
+
+#ROC and Confusion Matrix
+svm.predtest=as.numeric(svm.predtest)#since svm.predtest is in logical form
+svm.roc=roc(testlables, svm.predtest)
+plot(svm.roc)
+auc(svm.roc)
+testlables=as.character(testlables)
+svm.predtest=as.character(svm.predtest)
+confusionMatrix(svm.predtest,testlables)
+
+------------------------------------------------------------------------------------------------------------
+# class weights
+vim=data.frame(VIF_adjusted)
+vi=subset(vim,select=-X1)
+vipos=subset(vi,vi$SeriousDlqin2yrs==1)
+vineg=subset(vi,vi$SeriousDlqin2yrs==0)
+intrainvipos=createDataPartition(1:nrow(vipos),p=0.7,list=FALSE)
+intrainvineg=createDataPartition(1:nrow(vineg),p=0.7,list=FALSE)
+trainvipos=vipos[intrainvipos,1:8]
+trainvineg=vineg[intrainvineg,1:8]
+testvipos=vipos[-intrainvipos,]
+testvineg=vineg[-intrainvineg,]
+trainvi=rbind(trainvipos,trainvineg)
+testvi=rbind(testvipos,testvineg)
+svm_normal=svm(trainvi$SeriousDlqin2yrs~., data=trainvi , cost =1,class.weights= c("No" = 1, "Yes" = 15))
+pred=predict(svm_normal,testvi)
+plot(roc(test$SeriousDlqin2yrs, svm_normal, direction="<"),col="yellow", lwd=3, main="over_roc")
+
+
+
+tune.out <- tune(svm, trainvi$SeriousDlqin2yrs~., data = trainvi,  
+                 ranges = list(cost = c(0.1,1)), 
+                 class.weights= c("No" = 1, "Yes" = 15))
+
+summary(tune.out)
+
+table(true=dat[-train ,"y"], pred=predict (tune.out$best .model ,
+                                           newx=dat[-train ,]))
+
+library(pROC)
+plot(roc(over_test$SeriousDlqin2yrs, glm_response_scores, direction="<"),col="yellow", lwd=3, main="over_roc")
+
+#data_level
+
+aim=data.frame(VIF_adjusted)
+ai=subset(aim,select=-X1)
+
+#over_sampling
+
+over <- ovun.sample(ai$SeriousDlqin2yrs ~ ., data = ai, method = "over",N = 280000)$data
+intrainover=createDataPartition(1:nrow(over),p=0.7,list=FALSE)
+trainover=[intrainover,]
+testover=[-intrainover,]
+svm_over=svm(SeriousDlqin2yrs~., data=trainover , cost =1)
+pred_trainover= predict(svm_over,trainover)
+pred_testover=predict(svm_over,testover)
+plot(roc(testover$SeriousDlqin2yrs, pred_testover))
+roc_over=roc(testover$SeriousDlqin2yrs, pred_testover)
+auc(roc_over)
+
+#under_sampling
+
+under <- ovun.sample(ai$SeriousDlqin2yrs ~ ., data = ai, method = "under",N = 20052)$data
+intrainunder=createDataPartition(1:nrow(under),p=0.7,list=FALSE)
+trainunder=[intrainunder,]
+testunder=[-intraiunder,]
+svm_under=svm(SeriousDlqin2yrs~., data=trainunder , cost =1)
+pred_trainunder= predict(svm_under,trainunder)
+pred_testunder=predict(svm_under,testunder)
+plot(roc(testunder$SeriousDlqin2yrs, pred_testunder))
+roc_under=roc(testunder$SeriousDlqin2yrs, pred_testunder)
+auc(roc_under)
+
+#Both
+
+both <- ovun.sample(ai$SeriousDlqin2yrs ~ ., data = ai, method = "both", p=0.5,N=180000, seed = 1)$data
+intrainboth=createDataPartition(1:nrow(both),p=0.7,list=FALSE)
+trainboth=both[intrainboth,]
+testboth=both[-intrainboth,]
+svm_both=svm(SeriousDlqin2yrs~., data=trainboth , cost =1)
+pred_trainboth= predict(svm_both,trainboth)
+pred_testboth=predict(svm_both,testboth)
+plot(roc(testboth$SeriousDlqin2yrs, pred_testboth))
+roc_both=roc(testboth$SeriousDlqin2yrs, pred_testboth)
+auc(roc_both)
+
+#one class learning
+
+library(e1071)
+library(caret)
+library(NLP)
+library(tm)
+library(pROC)
+mi=data.frame(VIF_adjusted)
+mi=subset(mi,select=-X1)
+lapply(mi,class)
+
+positive=subset(mi,mi$SeriousDlqin2yrs==1)
+negative=subset(mi,mi$SeriousDlqin2yrs==0)
+intrain=createDataPartition(1:nrow(positive),p=0.6,list=FALSE)
+train=positive[intrain,2:8]
+trainlabels=positive[intrain,1]
+
+testpositive=positive[-intrain,]
+testwithclass=rbind(negative,testpositive)
+test=testwithclass[,2:8]
+testlables=testwithclass[,1]
+
+svm.model<-svm(train,y=NULL,
+               type='one-classification',
+               nu=0.10,
+               scale=TRUE)
+svm.predtrain<-predict(svm.model,train)
+svm.predtest<-predict(svm.model,test)
+svm.predtest=as.numeric(svm.predtest)#since svm.predtest is in logical form
+
+plot(roc(testlables, svm.predtest, direction="<"),col="yellow", lwd=3, main="over_roc")
+
+
